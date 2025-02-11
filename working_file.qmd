@@ -2,7 +2,10 @@
 # Loading the data
 
 ```{python}
-1 + 2
+from openai import OpenAI
+from local_settings import OPENAI_KEY # Assumes you have a local_settings.py file in your folder with your OpenAI key  
+# Initialize the OpenAI client
+client = OpenAI(api_key=OPENAI_KEY)
 ```
 
 ```{python}
@@ -10,4 +13,41 @@ import pandas as pd
 import plotly.express as px
 
 rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
+```
+
+There are 100 articles in the dataset with 24 columns, for the analysis: columns doi, first_page, last_page, etc can be remove since they do not contain necessary information at this stage
+
+```{python}
+clean_data = rw_data.drop(
+    columns=[
+        "doi",
+        "first_page",
+        "last_page",
+        "conference_series",
+        "volume",
+        "number",
+        "journal",
+        "url",
+    ]
+)
+
+yearVcount = clean_data.groupby("year").count()["abstract"]
+
+px.line(
+    yearVcount,
+    title="Abstracts trends from 1994 on Livestock Detection",
+    labels={"value": "Abstract Count", "year": "Year"},
+)
+
+px.histogram(
+    clean_data,
+    x="year",
+    color='publication_type',
+    title="Abstracts trends from 1994 on Livestock Detection",
+    labels={"count": "Abstract Count", "year": "Year", 'publication_type': 'Type'},
+    nbins=40, 
+
+)
+
+clean_data['authors'].value_counts()
 ```
