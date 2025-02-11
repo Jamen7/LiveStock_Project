@@ -4,3 +4,10 @@ hello world
 ```{python}
 1 + 2
 ```
+
+```{python}
+import pandas as pd
+import plotly.express as px
+
+rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
+```
