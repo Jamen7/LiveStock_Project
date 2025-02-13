@@ -115,51 +115,100 @@ require(['plotly'], function(Plotly) {
 </header>
 
 
-<div id="bdd72fd7" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">+</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="1">
-<pre><code>3</code></pre>
+<div id="5787db7e" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> local_settings <span class="im">import</span> OPENAI_KEY <span class="co"># Assumes you have a local_settings.py file in your folder with your OpenAI key  </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the OpenAI client</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI(api_key<span class="op">=</span>OPENAI_KEY) <span class="co"># I need a new API_key</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div id="15c015df" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>rw_data <span class="op">=</span> pd.read_excel(<span class="st">"livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"</span>, sheet_name<span class="op">=</span><span class="st">"Sheet1"</span>, header<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="da5f015a" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itables <span class="im">import</span> show</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>rw_data <span class="op">=</span> pd.read_excel(<span class="st">"livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"</span>, sheet_name<span class="op">=</span><span class="st">"Sheet1"</span>, header<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>There are 100 articles in the dataset with 24 columns, for the analysis: columns doi, first_page, last_page, etc can be remove since they do not contain necessary information at this stage</p>
-<div id="d56ef4a1" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>clean_data <span class="op">=</span> rw_data.drop(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"doi"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"first_page"</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"last_page"</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"conference_series"</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"volume"</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"number"</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"journal"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"url"</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>yearVcount <span class="op">=</span> clean_data.groupby(<span class="st">"year"</span>).count()[<span class="st">"abstract"</span>]</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>px.line(</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    yearVcount,</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Abstracts trends from 1994 on Livestock Detection"</span>,</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>{<span class="st">"value"</span>: <span class="st">"Abstract Count"</span>, <span class="st">"year"</span>: <span class="st">"Year"</span>},</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>px.histogram(</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    clean_data,</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="st">"year"</span>,</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Abstracts trends from 1994 on Livestock Detection"</span>,</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>{<span class="st">"value"</span>: <span class="st">"Abstract Count"</span>, <span class="st">"year"</span>: <span class="st">"Year"</span>},</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="2473248e" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>clean_data <span class="op">=</span> rw_data.drop(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"doi"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"first_page"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"last_page"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"conference_series"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"volume"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"number"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"journal"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"url"</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>yearVcount <span class="op">=</span> clean_data.groupby([<span class="st">"year"</span>, <span class="st">"publication_type"</span>]).count()[<span class="st">"abstract"</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>fig_line <span class="op">=</span> px.line(</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    clean_data.groupby(<span class="st">"year"</span>).count()[<span class="st">"abstract"</span>],</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Abstracts trends from 1994 on Livestock Detection"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>{<span class="st">"value"</span>: <span class="st">"Abstract Count"</span>, <span class="st">"year"</span>: <span class="st">"Year"</span>},</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>fig_line.show()</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>yearVcount <span class="op">=</span> yearVcount.to_frame().reset_index()</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>fig_bar <span class="op">=</span> px.bar(</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    yearVcount,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="st">"year"</span>,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="st">"abstract"</span>,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"publication_type"</span>,</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Abstracts trends from 1994 on Livestock Detection"</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>{<span class="st">"abstract"</span>: <span class="st">"Abstract Count"</span>, <span class="st">"year"</span>: <span class="st">"Year"</span>, <span class="st">"publication_type"</span>: <span class="st">"Type"</span>},</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># nbins=40,</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>fig_bar.show()</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># clean_data["year"].sort_values(ascending=False).head(20)</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co"># def llm_chat(message):</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#     response = client.chat.completions.create(</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co">#         model="gpt-4o-mini", messages=[{"role": "user", "content": message}]</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co">#     )</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co">#     return response.choices[0].message.content</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="co"># # Test the function here</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co"># llm_chat("What is Python (the language) named after?")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<div>                            <div id="7ae3c051-b46d-4a60-a752-3f693782ee71" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("7ae3c051-b46d-4a60-a752-3f693782ee71")) {                    Plotly.newPlot(                        "7ae3c051-b46d-4a60-a752-3f693782ee71",                        [{"alignmentgroup":"True","bingroup":"x","hovertemplate":"Year=%{x}\u003cbr\u003ecount=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"","offsetgroup":"","orientation":"v","showlegend":false,"x":[2023.0,2022.0,2021.0,2020.0,2020.0,2020.0,2024.0,2023.0,2018.0,2019.0,2020.0,2022.0,2019.0,2017.0,2022.0,2022.0,null,2024.0,2020.0,2024.0,2018.0,2023.0,2023.0,2022.0,2024.0,2024.0,2020.0,2020.0,2017.0,2014.0,2022.0,2022.0,null,2022.0,2020.0,2023.0,2023.0,2019.0,2022.0,2024.0,2011.0,2022.0,2022.0,2024.0,2023.0,2021.0,2014.0,2022.0,2019.0,2015.0,null,2023.0,2023.0,2022.0,2022.0,2020.0,2024.0,2020.0,2024.0,2017.0,2024.0,2023.0,2023.0,2024.0,2024.0,2019.0,2015.0,2023.0,2024.0,2016.0,2013.0,2011.0,2023.0,2015.0,2011.0,2019.0,2009.0,2015.0,2001.0,2011.0,2019.0,2019.0,2017.0,2016.0,1997.0,null,2024.0,2022.0,2020.0,1997.0,2022.0,2024.0,2024.0,2020.0,2016.0,1994.0,2016.0,2007.0,2020.0,2019.0],"xaxis":"x","yaxis":"y","type":"histogram"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"count"}},"legend":{"tracegroupgap":0},"title":{"text":"Abstracts trends from 1994 on Livestock Detection"},"barmode":"relative"},                        {"responsive": true}                    ).then(function(){
+<div>                            <div id="44e4baab-c364-4ddb-a6c8-4797fe4ae538" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("44e4baab-c364-4ddb-a6c8-4797fe4ae538")) {                    Plotly.newPlot(                        "44e4baab-c364-4ddb-a6c8-4797fe4ae538",                        [{"hovertemplate":"variable=abstract\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"abstract","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"abstract","orientation":"v","showlegend":true,"x":[1994.0,1997.0,2001.0,2007.0,2009.0,2011.0,2013.0,2014.0,2015.0,2016.0,2017.0,2018.0,2019.0,2020.0,2021.0,2022.0,2023.0,2024.0],"xaxis":"x","y":[1,2,1,1,1,4,1,2,4,4,4,2,9,13,2,16,13,16],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Abstract Count"}},"legend":{"title":{"text":"variable"},"tracegroupgap":0},"title":{"text":"Abstracts trends from 1994 on Livestock Detection"}},                        {"responsive": true}                    ).then(function(){
                             
-var gd = document.getElementById('7ae3c051-b46d-4a60-a752-3f693782ee71');
+var gd = document.getElementById('44e4baab-c364-4ddb-a6c8-4797fe4ae538');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };                });            </script>        </div>
+</div>
+<div class="cell-output cell-output-display">
+<div>                            <div id="72922121-f6fc-4e8a-b8b0-a7e6adeebfac" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("72922121-f6fc-4e8a-b8b0-a7e6adeebfac")) {                    Plotly.newPlot(                        "72922121-f6fc-4e8a-b8b0-a7e6adeebfac",                        [{"alignmentgroup":"True","hovertemplate":"Type=Patent\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Patent","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"Patent","offsetgroup":"Patent","orientation":"v","showlegend":true,"textposition":"auto","x":[1994.0,1997.0,2001.0,2007.0,2009.0,2011.0,2013.0,2015.0,2016.0,2017.0,2019.0,2020.0],"xaxis":"x","y":[1,2,1,1,1,1,1,1,3,2,5,2],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Type=Journal Article\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Journal Article","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"Journal Article","offsetgroup":"Journal Article","orientation":"v","showlegend":true,"textposition":"auto","x":[2011.0,2015.0,2016.0,2019.0,2020.0,2021.0,2022.0,2023.0,2024.0],"xaxis":"x","y":[1,2,1,2,8,2,5,7,14],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Type=Book Chapter\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Book Chapter","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"Book Chapter","offsetgroup":"Book Chapter","orientation":"v","showlegend":true,"textposition":"auto","x":[2014.0,2018.0,2020.0,2022.0,2024.0],"xaxis":"x","y":[1,1,1,1,2],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Type=Proceedings Article\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Proceedings Article","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"Proceedings Article","offsetgroup":"Proceedings Article","orientation":"v","showlegend":true,"textposition":"auto","x":[2014.0,2015.0,2017.0,2018.0,2020.0,2022.0,2023.0],"xaxis":"x","y":[1,1,1,1,1,9,5],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Type=Posted Content\u003cbr\u003eYear=%{x}\u003cbr\u003eAbstract Count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"Posted Content","marker":{"color":"#FFA15A","pattern":{"shape":""}},"name":"Posted Content","offsetgroup":"Posted Content","orientation":"v","showlegend":true,"textposition":"auto","x":[2023.0],"xaxis":"x","y":[1],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Abstract Count"}},"legend":{"title":{"text":"Type"},"tracegroupgap":0},"title":{"text":"Abstracts trends from 1994 on Livestock Detection"},"barmode":"relative"},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('72922121-f6fc-4e8a-b8b0-a7e6adeebfac');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -184,6 +233,277 @@ if (outputEl) {{
                         })                };                });            </script>        </div>
 </div>
 </div>
+<div id="7d340123" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import pandas as pd</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>file_path <span class="op">=</span> (</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_excel(file_path, sheet_name<span class="op">=</span><span class="st">"Sheet1"</span>).drop(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"doi"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"first_page"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"last_page"</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">"conference_series"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"volume"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"number"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"journal"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"url"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert 'year' column to numeric</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"year"</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"year"</span>] <span class="op">=</span> pd.to_numeric(df[<span class="st">"year"</span>], errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot Abstract Counts vs. Year using matplotlib</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>abstract_counts <span class="op">=</span> df.groupby(<span class="st">"year"</span>).size()</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>plt.bar(abstract_counts.index, abstract_counts.values, color<span class="op">=</span><span class="st">"skyblue"</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Number of Abstracts"</span>)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Abstract Counts per Year"</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Slice Data for Repeated Authors</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"authors"</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    authors_series <span class="op">=</span> (</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>        df[<span class="st">"authors"</span>].dropna().<span class="bu">str</span>.split(<span class="st">","</span>)</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    )  <span class="co"># Assuming authors are separated by ','</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    authors_flat <span class="op">=</span> [author.strip() <span class="cf">for</span> authors <span class="kw">in</span> authors_series <span class="cf">for</span> author <span class="kw">in</span> authors]</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    author_counts <span class="op">=</span> pd.Series(authors_flat).value_counts()</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    repeated_authors <span class="op">=</span> author_counts[author_counts <span class="op">&gt;</span> <span class="dv">1</span>].index.tolist()</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    repeated_authors_df <span class="op">=</span> df[</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        df[<span class="st">"authors"</span>].<span class="bu">str</span>.contains(<span class="st">"|"</span>.join(repeated_authors), na<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Repeated Authors Data:"</span>)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(repeated_authors_df[[<span class="st">"authors"</span>, <span class="st">"year"</span>, <span class="st">"Methods Used"</span>]])</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Slice Data for Latest Patents</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"publication_type"</span> <span class="kw">in</span> df.columns <span class="kw">and</span> <span class="st">"year"</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    patents_df <span class="op">=</span> df[df[<span class="st">"publication_type"</span>].<span class="bu">str</span>.contains(<span class="st">"patent"</span>, case<span class="op">=</span><span class="va">False</span>, na<span class="op">=</span><span class="va">False</span>)]</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    latest_patents_df <span class="op">=</span> patents_df.sort_values(by<span class="op">=</span><span class="st">"year"</span>, ascending<span class="op">=</span><span class="va">False</span>).drop(columns<span class="op">=</span>[<span class="st">'Literature Survey'</span>, <span class="st">'Limitations'</span>, <span class="st">'Future Research'</span>, <span class="st">'Research Gap'</span>])</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Latest Patents Data:"</span>)</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest_patents_df[[<span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"authors"</span>]].head())</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Oldest Patents Data:"</span>)</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest_patents_df[[<span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"authors"</span>]].tail())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="working_file_files/figure-html/cell-5-output-1.png" width="808" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Repeated Authors Data:
+                                              authors    year  \
+4        Chao Zuo, Liang Han, Pin Tao, Xiang lei Meng  2020.0   
+6   Wangli Hao, Li Zhang, S H Xu, Meng Han, Fuzhon...  2024.0   
+9                 Liang Han, Pin Tao, Ralph R. Martin  2019.0   
+11                                        Zishun Zhou  2022.0   
+18                                             Su Rui  2020.0   
+22  Xingyu Chen, Xiaodong Ye, Miao Li, Zhixian Son...  2023.0   
+23  Xingyu Chen, Xiaodong Ye, Miao Li, Hualong Li,...  2022.0   
+32                                        Zishun Zhou     NaN   
+36  Wangli Hao, Li Zhang, Meng Han, Kai Zhang, Fuz...  2023.0   
+65                                             Su Rui  2019.0   
+81  Jasper A. J. Eikelboom, Johan Wind, Eline van ...  2019.0   
+94                                         Li Minghua  2016.0   
+96                                         Li Minghua  2016.0   
+
+                                         Methods Used  
+4    - The paper proposes an improved livestock de...  
+6    - The paper introduces a novel model called Y...  
+9    - The paper presents a livestock detection al...  
+11   - The paper proposes an advanced improved YOL...  
+18   - The method involves acquiring an original i...  
+22   - The paper proposes an object detection meth...  
+23   - The paper proposes a Light Attention YOLO m...  
+32   - The paper proposes an advanced improved YOL...  
+36   - The paper proposes a novel model called YOL...  
+65   - The method involves acquiring an original i...  
+81   - The study evaluated the performance of a mu...  
+94   - The automatic counting and weighing equipme...  
+96   - The livestock automatic counting weighing a...  
+Latest Patents Data:
+                                                title    year         authors
+18  Livestock quantity identification method and a...  2020.0          Su Rui
+98  Animal count identification method, device, me...  2020.0   Wang Huaiqing
+48  Smart farm livestock management system based o...  2019.0  Choi Seung Kyu
+75  A video surveillance apparatus for detecting a...  2019.0  Joo Young Hoon
+65  livestock number identification method and device  2019.0          Su Rui
+Oldest Patents Data:
+                                                title    year  \
+97                            Animal detection system  2007.0   
+78            Automated system for counting livestock  2001.0   
+84  Animal detection sensor and animal number mana...  1997.0   
+89                 Livestock identification apparatus  1997.0   
+95  Automatic system for separating, counting and ...  1994.0   
+
+                                              authors  
+97  Sudo Tomonori, Fujii Hiroyuki, Oda Toshinori, ...  
+78                                        Jerry Starr  
+84              Hashimoto Kazuhiko, Yoshiike Nobuyuki  
+89  Lars H. Andersson, Joseph S. Sheen, William E....  
+95                                  Jean-Louis Hubert  </code></pre>
+</div>
+</div>
+<div id="31676549" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop NaN values in the "Methods Used" column</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>methods_text <span class="op">=</span> df[<span class="st">"Methods Used"</span>].dropna().<span class="bu">str</span>.lower()</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize and count common method-related words/phrases</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>method_words <span class="op">=</span> []</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> text <span class="kw">in</span> methods_text:</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    words <span class="op">=</span> text.split()  <span class="co"># Simple split, can be improved with NLP techniques</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    method_words.extend(words)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the most common method words (filtering out generic terms manually may be needed)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>common_methods <span class="op">=</span> Counter(method_words).most_common(<span class="dv">50</span>)  <span class="co"># Checking top words first</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract meaningful method names (refining this further using domain knowledge)</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>common_method_names <span class="op">=</span> [method <span class="cf">for</span> method, count <span class="kw">in</span> common_methods <span class="cf">if</span> <span class="bu">len</span>(method) <span class="op">&gt;</span> <span class="dv">3</span>][</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    :<span class="dv">10</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the dataset for rows that contain these methods</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>filtered_df <span class="op">=</span> df[</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">"Methods Used"</span>].<span class="bu">str</span>.contains(<span class="st">"|"</span>.join(common_method_names), case<span class="op">=</span><span class="va">False</span>, na<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Select relevant columns</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>result_df <span class="op">=</span> filtered_df[[<span class="st">"Methods Used"</span>, <span class="st">"Results"</span>]].head(<span class="dv">10</span>)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the extracted DataFrame</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>show(result_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<table id="itables_7c3a50af_03e3_45c9_bf6c_7c6f8202ce8d" class="display nowrap" data-quarto-disable-processing="true" style="table-layout:auto;width:auto;margin:auto;caption-side:bottom">
+<thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Methods Used</th>
+      <th>Results</th>
+    </tr>
+  </thead><tbody><tr>
+<td style="vertical-align:middle; text-align:left">
+<div style="float:left; margin-right: 10px;">
+<a href="https://mwouts.github.io/itables/"><svg class="main-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" width="64" viewbox="0 0 500 400" style="font-family: 'Droid Sans', sans-serif;">
+    <g style="fill:#d9d7fc">
+        <path d="M100,400H500V357H100Z"></path>
+        <path d="M100,300H400V257H100Z"></path>
+        <path d="M0,200H400V157H0Z"></path>
+        <path d="M100,100H500V57H100Z"></path>
+        <path d="M100,350H500V307H100Z"></path>
+        <path d="M100,250H400V207H100Z"></path>
+        <path d="M0,150H400V107H0Z"></path>
+        <path d="M100,50H500V7H100Z"></path>
+    </g>
+    <g style="fill:#1a1366;stroke:#1a1366;">
+   <rect x="100" y="7" width="400" height="43">
+    <animate attributename="width" values="0;400;0" dur="5s" repeatcount="indefinite"></animate>
+      <animate attributename="x" values="100;100;500" dur="5s" repeatcount="indefinite"></animate>
+  </rect>
+        <rect x="0" y="107" width="400" height="43">
+    <animate attributename="width" values="0;400;0" dur="3.5s" repeatcount="indefinite"></animate>
+    <animate attributename="x" values="0;0;400" dur="3.5s" repeatcount="indefinite"></animate>
+  </rect>
+        <rect x="100" y="207" width="300" height="43">
+    <animate attributename="width" values="0;300;0" dur="3s" repeatcount="indefinite"></animate>
+    <animate attributename="x" values="100;100;400" dur="3s" repeatcount="indefinite"></animate>
+  </rect>
+        <rect x="100" y="307" width="400" height="43">
+    <animate attributename="width" values="0;400;0" dur="4s" repeatcount="indefinite"></animate>
+      <animate attributename="x" values="100;100;500" dur="4s" repeatcount="indefinite"></animate>
+  </rect>
+        <g style="fill:transparent;stroke-width:8; stroke-linejoin:round" rx="5">
+            <g transform="translate(45 50) rotate(-45)">
+                <circle r="33" cx="0" cy="0"></circle>
+                <rect x="-8" y="32" width="16" height="30"></rect>
+            </g>
+
+            <g transform="translate(450 152)">
+                <polyline points="-15,-20 -35,-20 -35,40 25,40 25,20"></polyline>
+                <rect x="-15" y="-40" width="60" height="60"></rect>
+            </g>
+
+            <g transform="translate(50 352)">
+                <polygon points="-35,-5 0,-40 35,-5"></polygon>
+                <polygon points="-35,10 0,45 35,10"></polygon>
+            </g>
+
+            <g transform="translate(75 250)">
+                <polyline points="-30,30 -60,0 -30,-30"></polyline>
+                <polyline points="0,30 -30,0 0,-30"></polyline>
+            </g>
+
+            <g transform="translate(425 250) rotate(180)">
+                <polyline points="-30,30 -60,0 -30,-30"></polyline>
+                <polyline points="0,30 -30,0 0,-30"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>
+</a>
+</div>
+<div>
+Loading ITables v2.2.2 from the internet...
+(need <a href="https://mwouts.github.io/itables/troubleshooting.html">help</a>?)</div></td>
+
+</tr></tbody>
+
+</table>
+<link href="https://www.unpkg.com/dt_for_itables@2.0.13/dt_bundle.css" rel="stylesheet">
+<script type="module">
+    import {DataTable, jQuery as $} from 'https://www.unpkg.com/dt_for_itables@2.0.13/dt_bundle.js';
+
+    document.querySelectorAll("#itables_7c3a50af_03e3_45c9_bf6c_7c6f8202ce8d:not(.dataTable)").forEach(table => {
+        if (!(table instanceof HTMLTableElement))
+            return;
+
+        // Define the table data
+        const data = [[0, " - The paper proposes a livestock management and monitoring system that utilizes the end-to-end deep learning model You Only Look Once version 5 (YOLOv5) for feature extraction and detection of livestock of different sizes, enabling accurate counting and tracking of individual animals in various conditions.\\n\\n- It also incorporates data augmentation techniques using a real-time Kaggle dataset and employs the Roboflow application for scaling, resizing, and manipulating the dataset, while comparing the performance of YOLOv5 with Faster Regional convolutional neural networks (R-CNN) to demonstrate improved accuracy in livestock monitoring.", " - The proposed monitoring system using the YOLOv5 deep learning model achieved an accuracy of 93% on mAP@_0.5%, demonstrating its effectiveness in livestock classification and counting under various conditions, including challenges like occlusion and animal overlapping.\\n\\n- The system outperformed other Faster Regional convolutional neural networks (R-CNN) models, indicating that the YOLOv5 backbone network is a promising option for intelligent farm monitoring and management."], [1, " - The paper discusses traditional surveying methods for manual onsite counting of animals, highlighting their drawbacks such as being hard to accomplish, time-consuming, expensive, and potentially dangerous.\\n- The paper reviews potential methods for automated remote detection and counting of animals, including simple computer vision operations like spatial filtering, edge detection, binarization, and image subtraction, as well as more complex machine learning and AI approaches for object detection and recognition.", " - The paper reviews potential methods for automated remote detection and counting of animals, including computer vision operations like spatial filtering, edge detection, binarization, and image subtraction.\\n- Scientists worldwide are experimenting with computer vision and artificial intelligence approaches for automating farming and livestock management, demonstrating the significant potential of these technologies in achieving efficient animal population monitoring."], [2, " - The paper proposes a Dual-scale image Decomposition based Fusion technique (DDF) for fusing visible and thermal images, which enhances the detection and counting of livestock in the automated monitoring system.\\n\\n- A novel Restricted Supervised Learning (RSL) technique is introduced, which allows for efficient and accurate results with minimal training data, significantly improving average precision from 4.05% with fully supervised learning to 80.58% with restricted supervised learning using only five training images and five seed labels.", " - The proposed Restricted Supervised Learning (RSL) technique significantly improved the average precision on test data, achieving 80.58% with only five training images and five seed labels, compared to 4.05% using fully supervised learning. With 50 seed labels, the average precision further increased to 91.56%.\\n\\n- The model demonstrated high accuracy, achieving an average accuracy of 98.3% when extensively tested on benchmark animal datasets."], [3, " - The approach utilizes a fully convolutional neural network to transform input images, converting original RGB images into gray-scale images that highlight animal positions as gradient circles.\\n- A locator is employed to detect the positions of the highlighted circles in the transformed images, enabling accurate positioning and counting of the animals.", " - The proposed approach for livestock positioning and counting achieved a precision rate of 0.9842, indicating a high level of accuracy in identifying the positions of animals in the images processed.\\n- The recall rate of 0.9911 demonstrates the method's effectiveness in detecting nearly all actual animal positions, suggesting that the system is reliable for real-time applications in large animal farms."], [4, " - The paper proposes an improved livestock detection algorithm that utilizes MultiResUNet for image segmentation, followed by morphological operations on the segmented image patches to identify candidate regions for livestock detection.\\n\\n- The classification of the candidate regions is performed using an Inception V4 network combined with SENet, which enhances object features and reduces noise, leading to improved detection accuracy compared to other algorithms.", " - The proposed livestock detection algorithm based on a full convolutional neural network demonstrates an average accuracy (AP) that is superior to other livestock detection algorithms by approximately 4.2%.\\n- The method utilizes MultiResUNet for image segmentation and combines the Inception V4 network with SENet to enhance object features and reduce noise in the classification of candidate regions."], [5, " - The paper employs the Mask R-CNN algorithm, which is an object detection framework that includes instance segmentation capabilities. This method allows for the detection and classification of livestock (specifically sheep and cattle) in aerial images captured by quadcopters, enabling the system to associate specific image pixels with detected objects.\\n\\n- The proposed system utilizes a continuous data acquisition approach through quadcopters, which capture videos of livestock in pastures. The system then extracts video frames, performs segmentation, and evaluates the performance of the model using various training dataset sizes (200, 400, 600, 800, and 1000 images) to optimize classification and counting accuracy.", " - The proposed livestock classification and counting system achieved an accuracy of 96.0% for livestock counting and 92.0% for classification, with sheep performing better than cattle in both metrics (97.3% and 93.5% for sheep compared to 94.7% and 90.4% for cattle).\\n\\n- The performance evaluation indicated that the detection of sheep was superior to that of cattle, as evidenced by higher precision and recall rates, with the best precision rates being 0.955 for livestock, 0.960 for sheep, and 0.950 for cattle at an IoU threshold of 0.4."], [6, " - The paper introduces a novel model called YOLOv5-MHSA-DS, which integrates the YOLOv5 framework with Multi-Head Self-Attention (MHSA) and DySample modules. The Multi-Head Self-Attention component enhances the model's ability to capture diverse features, thereby improving the accuracy of pig detection and counting.\\n\\n- The DySample module dynamically adjusts sampling strategies based on the input data, allowing the model to focus on the most critical parts of the image. This adaptability significantly enhances the performance of pig detection and counting compared to traditional methods.", " - The YOLOv5-MHSA-DS model achieved a mean Average Precision (mAP) of 93.8%, indicating a high level of accuracy in detecting pigs compared to other models.\\n- The model demonstrated a counting accuracy of 95.0%, which surpasses the performance of other models by significant margins of 12.2% and 19.0%, respectively."], [7, " - A multiscene dataset was created by selecting images from various pig farms to enhance the generalization performance of the improved YOLOv5n model, allowing it to better handle different conditions such as occlusion, illumination differences, and varying numbers of pigs.\\n\\n- The Backbone of YOLOv5n was replaced with the FasterNet model to reduce the number of parameters and calculations, while the Neck was optimized using the E-GFPN structure to improve feature fusion capability, and the Focal EIoU loss function was implemented to enhance identification accuracy compared to the original CIoU loss function.", " - The improved YOLOv5n model achieved an Average Precision (AP) of 97.72%, demonstrating high identification accuracy for pig counting in complex environments, while also reducing the number of parameters by 50.57%, the amount of calculation by 32.20%, and the model size by 47.21% compared to the original YOLOv5n model.\\n\\n- The detection speed of the improved algorithm reached 75.87 frames per second (f/s), indicating that the model not only maintained accuracy and robustness in multiscene conditions but also provided efficient performance suitable for practical applications, such as a pig counting application developed for the Android system."], [8, " - The paper utilizes a model based on Region-based Convolutional Neural Networks (R-CNN) for detecting and counting sheep in a paddock from UAV video footage. This approach leverages deep learning algorithms to enhance the accuracy of livestock counting.\\n\\n- The results obtained from the R-CNN model are compared with other techniques to evaluate their performance, indicating a comprehensive analysis of different methodologies for sheep counting in various climatic conditions.", " - The paper presents a model based on Region-based Convolutional Neural Networks (R-CNN) for detecting and counting sheep in a paddock from UAV video, which aims to provide more accurate and timely stock information for farmers.\\n- The results of the sheep counting model are compared with other techniques to evaluate their performance, although specific performance metrics or outcomes are not detailed in the provided information."], [9, " - The paper presents a livestock detection algorithm that utilizes modified versions of U-net and Google Inception-v4 net. U-net is employed for segmenting aerial images to obtain regions of interest (ROIs), which helps retain feature information for small targets due to its feature map having the same resolution as the original image.\\n\\n- The modified Inception-net is used to classify each ROI, accurately identifying the targets within the segmented regions. The performance of this method is evaluated against Faster RCNN and Yolo-v3 algorithms, demonstrating better average precision than Yolo-v3 and comparable results to Faster RCNN.", " - The livestock detection algorithm presented in the paper, which utilizes modified versions of U-net and Google Inception-v4 net, achieved better average precision than the Yolo-v3 algorithm and comparable results to the Faster RCNN algorithm when evaluated on the aerial livestock dataset.\\n\\n- The method demonstrated improved detection capabilities for dense and touching instances of livestock, although it faced challenges with light-colored instances due to their limited representation in the training dataset, resulting in lower precision for those specific cases."]];
+
+        // Define the dt_args
+        let dt_args = {"layout": {"topStart": null, "topEnd": null, "bottomStart": null, "bottomEnd": null}, "order": [], "warn_on_selected_rows_not_rendered": true};
+        dt_args["data"] = data;
+
+        
+        new DataTable(table, dt_args);
+    });
+</script>
+</div>
+</div>
+<!-- ```{python}
+# Drop NaN values in the "Methods Used" column
+future_text = df['Methods Used'].dropna().str.lower()
+
+# Tokenize and count common method-related words/phrases
+method_words = []
+for text in methods_text:
+    words = text.split()  # Simple split, can be improved with NLP techniques
+    method_words.extend(words)
+
+# Get the most common method words (filtering out generic terms manually may be needed)
+common_methods = Counter(method_words).most_common(50)  # Checking top words first
+
+# Extract meaningful method names (refining this further using domain knowledge)
+common_method_names = [method for method, count in common_methods if len(method) > 3][:10]
+
+# Filter the dataset for rows that contain these methods
+filtered_df = df[df['Methods Used'].str.contains('|'.join(common_method_names), case=False, na=False)]
+
+# Select relevant columns
+result_df = filtered_df[['Methods Used', 'Results']].head(10)
+
+``` -->
 
 </main>
 <!-- /main column -->

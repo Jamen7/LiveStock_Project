@@ -11,6 +11,7 @@ client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
 ```{python}
 import pandas as pd
 import plotly.express as px
+from itables import show
 
 rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
 ```
@@ -31,39 +32,41 @@ clean_data = rw_data.drop(
     ]
 )
 
-yearVcount = clean_data.groupby(["year", 'publication_type']).count()["abstract"]
+yearVcount = clean_data.groupby(["year", "publication_type"]).count()["abstract"]
 
-px.line(
+fig_line = px.line(
     clean_data.groupby("year").count()["abstract"],
     title="Abstracts trends from 1994 on Livestock Detection",
-    labels={"abstract": "Abstract Count", "year": "Year"},
+    labels={"value": "Abstract Count", "year": "Year"},
 )
+
+fig_line.show()
 
 yearVcount = yearVcount.to_frame().reset_index()
 
-px.bar(
+fig_bar = px.bar(
     yearVcount,
     x="year",
-    y='abstract',
-    color='publication_type',
+    y="abstract",
+    color="publication_type",
     title="Abstracts trends from 1994 on Livestock Detection",
-    labels={"abstract": "Abstract Count", "year": "Year", 'publication_type': 'Type'},
-    # nbins=40, 
-   
+    labels={"abstract": "Abstract Count", "year": "Year", "publication_type": "Type"},
+    # nbins=40,
 )
+fig_bar.show()
 
-clean_data['year'].sort_values(ascending=False).head(20)
-
-
-def llm_chat(message):
-    response = client.chat.completions.create(
-        model="gpt-4o-mini", messages=[{"role": "user", "content": message}]
-    )
-    return response.choices[0].message.content
+# clean_data["year"].sort_values(ascending=False).head(20)
 
 
-# Test the function here
-llm_chat("What is Python (the language) named after?")
+# def llm_chat(message):
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini", messages=[{"role": "user", "content": message}]
+#     )
+#     return response.choices[0].message.content
+
+
+# # Test the function here
+# llm_chat("What is Python (the language) named after?")
 ```
 
 ```{python}
@@ -74,13 +77,24 @@ import matplotlib.pyplot as plt
 file_path = (
     "livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"
 )
-df = pd.read_excel(file_path, sheet_name="Sheet1")
+df = pd.read_excel(file_path, sheet_name="Sheet1").drop(
+    columns=[
+        "doi",
+        "first_page",
+        "last_page",
+        "conference_series",
+        "volume",
+        "number",
+        "journal",
+        "url",
+    ]
+)
 
 # Convert 'year' column to numeric
 if "year" in df.columns:
     df["year"] = pd.to_numeric(df["year"], errors="coerce")
 
-# Plot Abstract Counts vs. Year
+# Plot Abstract Counts vs. Year using matplotlib
 abstract_counts = df.groupby("year").size()
 plt.figure(figsize=(10, 5))
 plt.bar(abstract_counts.index, abstract_counts.values, color="skyblue")
@@ -93,8 +107,8 @@ plt.show()
 # Slice Data for Repeated Authors
 if "authors" in df.columns:
     authors_series = (
-        df["authors"].dropna().str.split(";")
-    )  # Assuming authors are separated by ';'
+        df["authors"].dropna().str.split(",")
+    )  # Assuming authors are separated by ','
     authors_flat = [author.strip() for authors in authors_series for author in authors]
     author_counts = pd.Series(authors_flat).value_counts()
     repeated_authors = author_counts[author_counts > 1].index.tolist()
@@ -102,12 +116,81 @@ if "authors" in df.columns:
         df["authors"].str.contains("|".join(repeated_authors), na=False)
     ]
     print("Repeated Authors Data:")
-    print(repeated_authors_df[["title", "authors"]])
+    print(repeated_authors_df[["authors", "year", "Methods Used"]])
+
 
 # Slice Data for Latest Patents
 if "publication_type" in df.columns and "year" in df.columns:
     patents_df = df[df["publication_type"].str.contains("patent", case=False, na=False)]
-    latest_patents_df = patents_df.sort_values(by="year", ascending=False)
+    latest_patents_df = patents_df.sort_values(by="year", ascending=False).drop(columns=['Literature Survey', 'Limitations', 'Future Research', 'Research Gap'])
+
     print("Latest Patents Data:")
     print(latest_patents_df[["title", "year", "authors"]].head())
+    
+    print("Oldest Patents Data:")
+    print(latest_patents_df[["title", "year", "authors"]].tail())
 ```
+
+```{python}
+from collections import Counter
+
+# Drop NaN values in the "Methods Used" column
+methods_text = df["Methods Used"].dropna().str.lower()
+
+# Tokenize and count commo (
+   n method-re,
+) lated words/phrases
+
+method_words = []
+for text in methods_text: 
+    words = text.split()  # Simple split, can be improved with NLP techniques
+    method_words.extend(words)
+
+# Get the most common method words (filtering out generic terms manually may be needed)
+common_methods = Counter(method_words).most_common(50)  # Checking top words first
+
+# Extract meaningful method names (refining this further using domain knowledge)
+common_method_names = [m
+    ethod for method, count in common_methods if len(method) > 3][
+   
+   ,
+
+    :10
+]
+
+# Filter the dataset for rows that contain these methods
+filtered_df = df[
+    df["Methods Used"].str.contains("|".join(common_method_names), case=False, na=False)
+]
+
+# Select relevant columns
+result_df = filtered_df[["Methods Used", "Results"]].head(10)
+
+# Display the extracted DataFrame
+show(result_df)
+
+```
+
+<!-- ```{python}
+# Drop NaN values in the "Methods Used" column
+future_text = df['Methods Used'].dropna().str.lower()
+
+# Tokenize and count common method-related words/phrases
+method_words = []
+for text in methods_text:
+    words = text.split()  # Simple split, can be improved with NLP techniques
+    method_words.extend(words)
+
+# Get the most common method words (filtering out generic terms manually may be needed)
+common_methods = Counter(method_words).most_common(50)  # Checking top words first
+
+# Extract meaningful method names (refining this further using domain knowledge)
+common_method_names = [method for method, count in common_methods if len(method) > 3][:10]
+
+# Filter the dataset for rows that contain these methods
+filtered_df = df[df['Methods Used'].str.contains('|'.join(common_method_names), case=False, na=False)]
+
+# Select relevant columns
+result_df = filtered_df[['Methods Used', 'Results']].head(10)
+
+``` -->
