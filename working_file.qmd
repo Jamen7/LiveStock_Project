@@ -137,12 +137,10 @@ from collections import Counter
 # Drop NaN values in the "Methods Used" column
 methods_text = df["Methods Used"].dropna().str.lower()
 
-# Tokenize and count commo (
-   n method-re,
-) lated words/phrases
+# Tokenize and count common method-related words/phrases
 
 method_words = []
-for text in methods_text: 
+for text in methods_text:
     words = text.split()  # Simple split, can be improved with NLP techniques
     method_words.extend(words)
 
@@ -150,11 +148,7 @@ for text in methods_text:
 common_methods = Counter(method_words).most_common(50)  # Checking top words first
 
 # Extract meaningful method names (refining this further using domain knowledge)
-common_method_names = [m
-    ethod for method, count in common_methods if len(method) > 3][
-   
-   ,
-
+common_method_names = [method for method, count in common_methods if len(method) > 3][
     :10
 ]
 
