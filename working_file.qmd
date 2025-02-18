@@ -12,6 +12,7 @@ client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
 import pandas as pd
 import plotly.express as px
 from itables import show
+import numpy as np
 
 rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
 ```
@@ -88,7 +89,7 @@ df = pd.read_excel(file_path, sheet_name="Sheet1").drop(
         "journal",
         "url",
     ]
-)
+).drop_duplicates(subset='abstract')
 
 # Convert 'year' column to numeric
 if "year" in df.columns:
@@ -165,26 +166,27 @@ show(result_df)
 
 ```
 
-<!-- ```{python}
-# Drop NaN values in the "Methods Used" column
-future_text = df['Methods Used'].dropna().str.lower()
+```{python}
+df_type_filter = df.query('publication_type == ["Proceedings Article", "Journal Article"]')
 
-# Tokenize and count common method-related words/phrases
-method_words = []
-for text in methods_text:
-    words = text.split()  # Simple split, can be improved with NLP techniques
-    method_words.extend(words)
+# Define phrases to search for
+keywords = ["deep learning", "yolo", "cnn", 'convolutional neural network', 'mrvifnet', 'ldr', 'rfid']
 
-# Get the most common method words (filtering out generic terms manually may be needed)
-common_methods = Counter(method_words).most_common(50)  # Checking top words first
+def find_keywords(text, keywords):
+    """Finds all matching phrases or keywords in a given text and returns them as a comma-separated string."""
+    if pd.isna(text):
+        return None
+    text_lower = text.lower()
+    found = [kw for kw in keywords if kw in text_lower]
+    return ", ".join(found) if found else None
 
-# Extract meaningful method names (refining this further using domain knowledge)
-common_method_names = [method for method, count in common_methods if len(method) > 3][:10]
 
-# Filter the dataset for rows that contain these methods
-filtered_df = df[df['Methods Used'].str.contains('|'.join(common_method_names), case=False, na=False)]
+# Apply function to the "Methods Used" column
+df_type_filter["Found Methods"] = df_type_filter["Methods Used"].apply(lambda x: find_keywords(x, keywords))
 
-# Select relevant columns
-result_df = filtered_df[['Methods Used', 'Results']].head(10)
+# Display the first few rows to verify the results
+show(df_type_filter[["Methods Used", "Found Methods"]])
 
-``` -->
+px.histogram(df_type_filter, y= 'Found Methods')
+
+```
