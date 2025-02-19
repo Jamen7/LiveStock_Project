@@ -13,6 +13,10 @@ import pandas as pd
 import plotly.express as px
 from itables import show
 import numpy as np
+import warnings
+
+# Suppress warnings for cleaner output
+warnings.filterwarnings("ignore")
 
 rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
 ```
@@ -166,11 +170,29 @@ show(result_df)
 
 ```
 
+Filtering the data for articles only and only the last five years of articles to be considered. Manually searching for known methods used
+
 ```{python}
-df_type_filter = df.query('publication_type == ["Proceedings Article", "Journal Article"]')
+df_type_filter = (
+    df.query(
+        'publication_type == ["Proceedings Article", "Journal Article"] & year >= 2021'
+    )
+    .dropna(subset=["Methods Used"])
+    .drop_duplicates(subset=["Methods Used"])
+)
 
 # Define phrases to search for
-keywords = ["deep learning", "yolo", "cnn", 'convolutional neural network', 'mrvifnet', 'ldr', 'rfid']
+keywords = [
+    "deep learning",
+    "yolo",
+    "cnn",
+    "mrvifnet",
+    "ldr",
+    "rfid",
+    "machine learning",
+    "ddf",
+]
+
 
 def find_keywords(text, keywords):
     """Finds all matching phrases or keywords in a given text and returns them as a comma-separated string."""
@@ -182,11 +204,62 @@ def find_keywords(text, keywords):
 
 
 # Apply function to the "Methods Used" column
-df_type_filter["Found Methods"] = df_type_filter["Methods Used"].apply(lambda x: find_keywords(x, keywords))
+df_type_filter["Found Methods"] = df_type_filter["Methods Used"].apply(
+    lambda x: find_keywords(x, keywords)
+)
+df["Found Methods"] = df["Methods Used"].apply(lambda x: find_keywords(x, keywords))
 
-# Display the first few rows to verify the results
-show(df_type_filter[["Methods Used", "Found Methods"]])
 
-px.histogram(df_type_filter, y= 'Found Methods')
+# filter to yolo and deep learning
+df_future = df_type_filter[df_type_filter["Found Methods"].isin(["yolo", "deep learning"])]
 
+# Save the updated DataFrame
+df_future[["Methods Used", "Found Methods", "Results", "Future Research"]].to_excel("updated_methods.xlsx", index=False)
+
+# show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
+
+px.histogram(df_type_filter, y="Found Methods")
+
+```
+
+The scopus data reviewed
+
+```{python}
+scopus_rawdata = pd.read_csv("scopus - livestock and deep learning.csv")
+scopus = scopus_rawdata[
+    [
+        "Authors",
+        "Title",
+        "Year",
+        "Abstract",
+        "Author Keywords",
+        "Language of Original Document",
+        "Document Type",
+    ]
+].query("Year >= 2021")
+
+scopus = scopus[scopus["Language of Original Document"].isin(["English"])]
+
+
+scopus = scopus[
+    scopus["Document Type"].str.contains("Article|Conference paper", na=False)
+]
+
+scopus = scopus[
+    (
+        scopus["Author Keywords"].str.contains(
+            "Deep Learning|Computer vision|CNN", na=False
+        )
+    )
+]
+
+scopus = scopus[
+    ~(
+        scopus["Author Keywords"].str.contains(
+            "Chicken|Poultry|Crop|Behaviour", na=False
+        )
+    )
+]
+
+scopus
 ```
