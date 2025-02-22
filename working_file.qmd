@@ -13,6 +13,8 @@ import pandas as pd
 import plotly.express as px
 from itables import show
 import numpy as np
+import matplotlib.pyplot as plt
+from collections import Counter
 import warnings
 
 # Suppress warnings for cleaner output
@@ -45,7 +47,7 @@ fig_line = px.line(
     labels={"value": "Abstract Count", "year": "Year"},
 )
 
-fig_line.show()
+# fig_line.show()
 
 yearVcount = yearVcount.to_frame().reset_index()
 
@@ -75,8 +77,7 @@ fig_bar.show()
 ```
 
 ```{python}
-# import pandas as pd
-import matplotlib.pyplot as plt
+
 
 # Load the data
 file_path = (
@@ -136,41 +137,8 @@ if "publication_type" in df.columns and "year" in df.columns:
     print(latest_patents_df[["title", "year", "authors"]].tail())
 ```
 
-```{python}
-from collections import Counter
 
-# Drop NaN values in the "Methods Used" column
-methods_text = df["Methods Used"].dropna().str.lower()
-
-# Tokenize and count common method-related words/phrases
-
-method_words = []
-for text in methods_text:
-    words = text.split()  # Simple split, can be improved with NLP techniques
-    method_words.extend(words)
-
-# Get the most common method words (filtering out generic terms manually may be needed)
-common_methods = Counter(method_words).most_common(50)  # Checking top words first
-
-# Extract meaningful method names (refining this further using domain knowledge)
-common_method_names = [method for method, count in common_methods if len(method) > 3][
-    :10
-]
-
-# Filter the dataset for rows that contain these methods
-filtered_df = df[
-    df["Methods Used"].str.contains("|".join(common_method_names), case=False, na=False)
-]
-
-# Select relevant columns
-result_df = filtered_df[["Methods Used", "Results"]].head(10)
-
-# Display the extracted DataFrame
-show(result_df)
-
-```
-
-Filtering the data for articles only and only the last five years of articles to be considered. Manually searching for known methods used
+Filtering the data for articles only and only the last five years of articles to be considered. Manually searching for known methods used with a defined function that can be re-utilised.
 
 ```{python}
 df_type_filter = (
@@ -214,7 +182,7 @@ df["Found Methods"] = df["Methods Used"].apply(lambda x: find_keywords(x, keywor
 df_future = df_type_filter[df_type_filter["Found Methods"].isin(["yolo", "deep learning"])]
 
 # Save the updated DataFrame
-df_future[["Methods Used", "Found Methods", "Results", "Future Research"]].to_excel("updated_methods.xlsx", index=False)
+df_future[["Methods Used", "Found Methods", 'year', "Results", "Future Research"]].to_excel("updated_methods.xlsx", index=False)
 
 # show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
 
@@ -222,44 +190,131 @@ px.histogram(df_type_filter, y="Found Methods")
 
 ```
 
-The scopus data reviewed
+Finding the common future research for the articles with yolo and deep learning methods are done as follows:
+
+```{python}
+# Drop NaN values in the "Future Research" column
+research_text = df_future["Future Research"].dropna().str.lower()
+
+# Tokenize and count common research-related words/phrases
+
+research_words = []
+for text in research_text:
+    words = text.split()  # Simple split, can be improved with NLP techniques
+    research_words.extend(words)
+
+# Get the most common research words (filtering out generic terms manually may be needed)
+common_research = Counter(research_words).most_common(50)  # Checking top words first
+
+# Extract meaningful research names (refining this further using domain knowledge)
+common_research_names = [
+    method for method, count in common_research if len(method) > 3
+][:10]
+
+# Filter the dataset for rows that contain these research
+filtered_df = df_future[
+    df_future["Future Research"].str.contains(
+        "|".join(common_research_names), case=False, na=False
+    )
+]
+
+# Select relevant columns
+result_df = filtered_df[["Future Research", "year", "Found Methods"]]
+
+result_df.to_excel("future_research.xlsx", index=False)
+
+# Display the extracted DataFrame
+show(result_df)
+
+```
+
+The scopus data filtered through year, language, document type, keywords, and abstract which reduced the entries from 708 to 79. The keywords were manually scanned especially those that needed to be negated.
 
 ```{python}
 scopus_rawdata = pd.read_csv("scopus - livestock and deep learning.csv")
+
+# keep articles from 2021 onward
 scopus = scopus_rawdata[
     [
         "Authors",
         "Title",
         "Year",
+        "Source title",
         "Abstract",
         "Author Keywords",
+        "Index Keywords",
         "Language of Original Document",
         "Document Type",
     ]
 ].query("Year >= 2021")
 
+# Restrict to English language
 scopus = scopus[scopus["Language of Original Document"].isin(["English"])]
 
+# Keep some source title
+# scopus = scopus[(scopus["Source title"].str.lower().str.contains("sensors|agriculture|computer|ieee|animals|", na=False))]
 
+# Choose from articles and conference papers
 scopus = scopus[
     scopus["Document Type"].str.contains("Article|Conference paper", na=False)
 ]
 
+# Find certain author keywords to keep
 scopus = scopus[
     (
-        scopus["Author Keywords"].str.contains(
-            "Deep Learning|Computer vision|CNN", na=False
+        scopus["Author Keywords"].str.lower().str.contains(
+            "deep learning|computer vision|cnn|livestock", na=False
         )
     )
 ]
 
+# Find certain author keywords to negate
 scopus = scopus[
     ~(
-        scopus["Author Keywords"].str.contains(
-            "Chicken|Poultry|Crop|Behaviour", na=False
+        scopus["Author Keywords"].str.lower().str.contains(
+            "chicken|poultry|crop|behaviour|behavior|animal welfare|disease|health|climate change|plants|carbon emission|genomic|food|meat quality|dairy|sow|beef", na=False
+        )
+    )
+]
+
+# Find certain index keywords to negate
+scopus = scopus[
+    ~(
+        scopus["Index Keywords"].str.lower().str.contains(
+            "crop|disease|health|chicken|poultry|behaviour|behavior|welfare|feces|vegetation|genomic|genome|genetic|food|diagnosis|physiological|reproduction|pollution|plant|dairy|beef|parasite", na=False
+        )
+    )
+]
+
+# Find certain abstract to negate
+scopus = scopus[
+    ~(
+        scopus["Abstract"].str.lower().str.contains(
+            "crop|disease|health|chicken|poultry|behaviour|behavior|welfare|feces|vegetation|genomic|genome|genetic|food|diagnosis|physiological|reproduction|pollution|plant|dairy|beef|parasite", na=False
         )
     )
 ]
 
 scopus
+```
+
+Assign a new variable for the found methods using the find_keywords func defined before. Then save the sliced data to an excel file
+
+```{python}
+scopus["Found Methods"] = scopus["Abstract"].apply(lambda x: find_keywords(x, keywords))
+
+
+# filter to yolo and deep learning
+scopus_method = scopus[
+    scopus["Found Methods"].isin(["yolo", "deep learning", "deep learning, yolo"])
+]
+
+# Save the updated DataFrame
+scopus_method[
+    ["Abstract", "Found Methods", "Year", "Title", "Author Keywords"]
+].to_excel("scopus_methods.xlsx", index=False)
+
+# show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
+
+px.histogram(scopus, y="Found Methods")
 ```
