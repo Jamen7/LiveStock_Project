@@ -1,11 +1,23 @@
 
+---
+title: "Livestock Detection and Counting Methods: Review"
+format: html
+author: "James Matosse"
+execute: 
+  echo: false
+---
+
+# Introduction
+
+This report aims to review the current literature on livestock detection, identification and counting in a farm that uses computer vision, deep learning, machine learning. Livestocks are considered for mammals like goats, cattles, pigs, sheep, etc in exclusion to poultry, vegetation, plants and/or animal welfare or behaviours. Two datasets were obtained, namely 100 articles that were parsed to an AI model to summarise and/or extract from each article some specific information for example; methods used, future research, results and etc. The other dataset contained 708 articles from scopus which will be filtered following a defined criterion.
+
 # Loading the data
 
 ```{python}
-from openai import OpenAI
-from local_settings import OPENAI_KEY # Assumes you have a local_settings.py file in your folder with your OpenAI key  
-# Initialize the OpenAI client
-client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
+# from openai import OpenAI
+# from local_settings import OPENAI_KEY # Assumes you have a local_settings.py file in your folder with your OpenAI key  
+# # Initialize the OpenAI client
+# client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
 ```
 
 ```{python}
@@ -20,15 +32,23 @@ import warnings
 # Suppress warnings for cleaner output
 warnings.filterwarnings("ignore")
 
-rw_data = pd.read_excel("livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx", sheet_name="Sheet1", header=0)
+rw_data = pd.read_excel(
+    "livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx",
+    sheet_name="Sheet1",
+)
+
+rw_data
 ```
 
-There are 100 articles in the dataset with 24 columns, for the analysis: columns doi, first_page, last_page, etc can be remove since they do not contain necessary information at this stage
+## Preliminary analysis
+
+There are 100 articles in this dataset with 24 columns, for the analysis: columns first_page, last_page, etc can be remove since they do not contain necessary information at this stage.
+
+The publication type variable can be used to see trends of the articles contained against years.
 
 ```{python}
 clean_data = rw_data.drop(
     columns=[
-        "doi",
         "first_page",
         "last_page",
         "conference_series",
@@ -38,6 +58,10 @@ clean_data = rw_data.drop(
         "url",
     ]
 )
+
+# Convert 'year' column to numeric
+if "year" in clean_data.columns:
+    clean_data["year"] = pd.to_numeric(clean_data["year"], errors="coerce")
 
 yearVcount = clean_data.groupby(["year", "publication_type"]).count()["abstract"]
 
@@ -76,73 +100,83 @@ fig_bar.show()
 # llm_chat("What is Python (the language) named after?")
 ```
 
+The column chart displays the number of abstracts per year, categorized by publication type. Research on remote livestock counting became a recurring topic from 2014 onward, whereas earlier publications were exclusively patents—except for a single journal article in 2011. The impact of the COVID-19 pandemic is evident in 2021, with the number of abstracts dropping to just two, compared to 12 in 2020. By 2022, academic activity had returned to normal, reflected in an increased abstract count of 15.
+
 ```{python}
 
 
 # Load the data
-file_path = (
-    "livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"
-)
-df = pd.read_excel(file_path, sheet_name="Sheet1").drop(
-    columns=[
-        "doi",
-        "first_page",
-        "last_page",
-        "conference_series",
-        "volume",
-        "number",
-        "journal",
-        "url",
-    ]
-).drop_duplicates(subset='abstract')
-
-# Convert 'year' column to numeric
-if "year" in df.columns:
-    df["year"] = pd.to_numeric(df["year"], errors="coerce")
+# file_path = (
+#     "livestock-detection-counting-and-classification_2025-02-06_10_54_12_export.xlsx"
+# )
+# df = pd.read_excel(file_path, sheet_name="Sheet1").drop(
+#     columns=[
+#         "doi",
+#         "first_page",
+#         "last_page",
+#         "conference_series",
+#         "volume",
+#         "number",
+#         "journal",
+#         "url",
+#     ]
+# ).drop_duplicates(subset='abstract')
 
 # Plot Abstract Counts vs. Year using matplotlib
-abstract_counts = df.groupby("year").size()
-plt.figure(figsize=(10, 5))
-plt.bar(abstract_counts.index, abstract_counts.values, color="skyblue")
-plt.xlabel("Year")
-plt.ylabel("Number of Abstracts")
-plt.title("Abstract Counts per Year")
-plt.xticks(rotation=45)
-plt.show()
+abstract_counts = clean_data.groupby("year").size()
+# plt.figure(figsize=(10, 5))
+# plt.bar(abstract_counts.index, abstract_counts.values, color="skyblue")
+# plt.xlabel("Year")
+# plt.ylabel("Number of Abstracts")
+# plt.title("Abstract Counts per Year")
+# plt.xticks(rotation=45)
+# plt.show()
 
 # Slice Data for Repeated Authors
-if "authors" in df.columns:
+if "authors" in clean_data.columns:
     authors_series = (
-        df["authors"].dropna().str.split(",")
+        clean_data["authors"].dropna().str.split(",")
     )  # Assuming authors are separated by ','
     authors_flat = [author.strip() for authors in authors_series for author in authors]
     author_counts = pd.Series(authors_flat).value_counts()
     repeated_authors = author_counts[author_counts > 1].index.tolist()
-    repeated_authors_df = df[
-        df["authors"].str.contains("|".join(repeated_authors), na=False)
+    repeated_authors_df = clean_data[
+        clean_data["authors"].str.contains("|".join(repeated_authors), na=False)
     ]
     print("Repeated Authors Data:")
-    print(repeated_authors_df[["authors", "year", "Methods Used"]])
+    # print(repeated_authors_df[["authors", "year", "Methods Used"]])
 
+# Truncate function
+def truncate_label(label, max_length=10):
+    return label[:max_length] + "..." if len(label) > max_length else label
+
+# Apply truncation to the `authors` column
+repeated_authors_df['authors_truncated'] = repeated_authors_df['authors'].apply(lambda x: truncate_label(x, max_length=35))
+
+
+show(repeated_authors_df[["authors_truncated", "year", "title"]])
 
 # Slice Data for Latest Patents
-if "publication_type" in df.columns and "year" in df.columns:
-    patents_df = df[df["publication_type"].str.contains("patent", case=False, na=False)]
+if "publication_type" in clean_data.columns and "year" in clean_data.columns:
+    patents_df = clean_data[clean_data["publication_type"].str.contains("patent", case=False, na=False)]
     latest_patents_df = patents_df.sort_values(by="year", ascending=False).drop(columns=['Literature Survey', 'Limitations', 'Future Research', 'Research Gap'])
 
-    print("Latest Patents Data:")
-    print(latest_patents_df[["title", "year", "authors"]].head())
+    # print("Latest Patents Data:")
+    # print(latest_patents_df[["title", "year", "authors"]].head())
     
-    print("Oldest Patents Data:")
-    print(latest_patents_df[["title", "year", "authors"]].tail())
+    # print("Oldest Patents Data:")
+    # print(latest_patents_df[["title", "year", "authors"]].tail())
 ```
 
+# Methods used reviewed
 
 Filtering the data for articles only and only the last five years of articles to be considered. Manually searching for known methods used with a defined function that can be re-utilised.
 
 ```{python}
+# | echo: true
+
 df_type_filter = (
-    df.query(
+    clean_data.query(
         'publication_type == ["Proceedings Article", "Journal Article"] & year >= 2021'
     )
     .dropna(subset=["Methods Used"])
@@ -175,14 +209,20 @@ def find_keywords(text, keywords):
 df_type_filter["Found Methods"] = df_type_filter["Methods Used"].apply(
     lambda x: find_keywords(x, keywords)
 )
-df["Found Methods"] = df["Methods Used"].apply(lambda x: find_keywords(x, keywords))
+clean_data["Found Methods"] = clean_data["Methods Used"].apply(
+    lambda x: find_keywords(x, keywords)
+)
 
 
 # filter to yolo and deep learning
-df_future = df_type_filter[df_type_filter["Found Methods"].isin(["yolo", "deep learning"])]
+df_future = df_type_filter[
+    df_type_filter["Found Methods"].isin(["yolo", "deep learning"])
+]
 
 # Save the updated DataFrame
-df_future[["Methods Used", "Found Methods", 'year', "Results", "Future Research"]].to_excel("updated_methods.xlsx", index=False)
+df_future[
+    ["Methods Used", "Found Methods", "year", "Results", "Future Research"]
+].to_excel("updated_methods.xlsx", index=False)
 
 # show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
 
@@ -190,9 +230,11 @@ px.histogram(df_type_filter, y="Found Methods")
 
 ```
 
-Finding the common future research for the articles with yolo and deep learning methods are done as follows:
+Finding the common future research for the articles with yolo and deep learning methods is done as follows:
 
 ```{python}
+# | echo: true
+
 # Drop NaN values in the "Future Research" column
 research_text = df_future["Future Research"].dropna().str.lower()
 
@@ -228,9 +270,13 @@ show(result_df)
 
 ```
 
+# Scopus data
+
 The scopus data filtered through year, language, document type, keywords, and abstract which reduced the entries from 708 to 79. The keywords were manually scanned especially those that needed to be negated.
 
 ```{python}
+# | echo: true
+
 scopus_rawdata = pd.read_csv("scopus - livestock and deep learning.csv")
 
 # keep articles from 2021 onward
@@ -245,6 +291,7 @@ scopus = scopus_rawdata[
         "Index Keywords",
         "Language of Original Document",
         "Document Type",
+        "DOI",
     ]
 ].query("Year >= 2021")
 
@@ -298,7 +345,7 @@ scopus = scopus[
 scopus
 ```
 
-Assign a new variable for the found methods using the find_keywords func defined before. Then save the sliced data to an excel file
+Assign a new variable for the found methods using the find_keywords function defined before. Then save the sliced data to an excel file for yolo and deep learning methods which leads to 39 entries.
 
 ```{python}
 scopus["Found Methods"] = scopus["Abstract"].apply(lambda x: find_keywords(x, keywords))
@@ -311,7 +358,7 @@ scopus_method = scopus[
 
 # Save the updated DataFrame
 scopus_method[
-    ["Abstract", "Found Methods", "Year", "Title", "Author Keywords"]
+    ["Abstract", "Found Methods", "Year", "Title", "Author Keywords", "DOI"]
 ].to_excel("scopus_methods.xlsx", index=False)
 
 # show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
