@@ -14,10 +14,10 @@ This report aims to review the current literature on livestock detection, identi
 # Loading the data
 
 ```{python}
-# from openai import OpenAI
-# from local_settings import OPENAI_KEY # Assumes you have a local_settings.py file in your folder with your OpenAI key  
-# # Initialize the OpenAI client
-# client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
+from openai import OpenAI
+from local_settings import OPENAI_KEY # Assumes you have a local_settings.py file in your folder with your OpenAI key  
+# Initialize the OpenAI client
+client = OpenAI(api_key=OPENAI_KEY) # I need a new API_key
 ```
 
 ```{python}
@@ -89,14 +89,14 @@ fig_bar.show()
 # clean_data["year"].sort_values(ascending=False).head(20)
 
 
-# def llm_chat(message):
-#     response = client.chat.completions.create(
-#         model="gpt-4o-mini", messages=[{"role": "user", "content": message}]
-#     )
-#     return response.choices[0].message.content
+def llm_chat(message):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini", messages=[{"role": "user", "content": message}]
+    )
+    return response.choices[0].message.content
 
 
-# # Test the function here
+# Test the function here
 # llm_chat("What is Python (the language) named after?")
 ```
 
@@ -270,6 +270,35 @@ show(result_df)
 
 ```
 
+Now using the large language model to summarize the data.
+
+
+```{python}
+df_type_filter["full_dict"] = df_type_filter.to_dict(orient="records")
+df_type_filter
+```
+
+```{python}
+def paper_review(df_type_filter):
+    prompt = f"Considering the following data on this article {df_type_filter}, provide a summary review for each article my report."
+
+    return llm_chat(prompt)
+
+paper_review_vec = np.vectorize(paper_review)
+```
+
+```{python}
+df_test = df_type_filter[["title", "abstract", "Problem Statement", "Methods Used", "Research Gap", "Results", "Limitations", "Objectives"]].tail()
+df_test["full_dict"] = df_test.to_dict(orient="records")
+df_test["llm_summary"] = paper_review(df_test["full_dict"])
+# df_test[["Methods Used", "Results"]]
+```
+
+```{python}
+df_test.to_csv('papers_review.csv', index=False)
+```
+
+
 # Scopus data
 
 The scopus data filtered through year, language, document type, keywords, and abstract which reduced the entries from 708 to 79. The keywords were manually scanned especially those that needed to be negated.
@@ -346,6 +375,12 @@ scopus
 ```
 
 Assign a new variable for the found methods using the find_keywords function defined before. Then save the sliced data to an excel file for yolo and deep learning methods which leads to 39 entries.
+
+```{python}
+scopus1 = scopus.head()
+scopus1["full_dict"] = scopus1.to_dict(orient="records")
+scopus1["llm_summary"] = paper_review(scopus1["full_dict"])
+```
 
 ```{python}
 scopus["Found Methods"] = scopus["Abstract"].apply(lambda x: find_keywords(x, keywords))
