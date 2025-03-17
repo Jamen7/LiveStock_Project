@@ -273,29 +273,35 @@ show(result_df)
 Now using the large language model to summarize the data.
 
 
-```{python}
-df_type_filter["full_dict"] = df_type_filter.to_dict(orient="records")
-df_type_filter
-```
 
 ```{python}
-def paper_review(df_type_filter):
-    prompt = f"Considering the following data on this article {df_type_filter}, provide a summary review for each article my report."
+def extract_info(df_type_filter):
+    prompt = f"You are an AI assistant reviewing research articles, extract the method used (such as yolo, cnn, deep learning) on this article {df_type_filter} into a category for my report. No explainations. "
 
     return llm_chat(prompt)
 
-paper_review_vec = np.vectorize(paper_review)
+extract_info_vec = np.vectorize(extract_info)
 ```
 
 ```{python}
-df_test = df_type_filter[["title", "abstract", "Problem Statement", "Methods Used", "Research Gap", "Results", "Limitations", "Objectives"]].tail()
-df_test["full_dict"] = df_test.to_dict(orient="records")
-df_test["llm_summary"] = paper_review(df_test["full_dict"])
+# Function to review an article
+def review_article(article_text):
+    prompt = f"You are an AI assistant reviewing research articles. Review this article:\n\n{article_text} "
+
+    return llm_chat(prompt)
+
+```
+
+```{python}
+df_test = df_type_filter[["title", "abstract", "Problem Statement", "Methods Used", "Research Gap", "Results", "Limitations", "Objectives"]].head()
+# df_test["full_dict"] = df_test.to_dict(orient="records")
+df_type_filter["llm_method"] = extract_info_vec(df_type_filter["Methods Used"])
 # df_test[["Methods Used", "Results"]]
+
 ```
 
 ```{python}
-df_test.to_csv('papers_review.csv', index=False)
+df_type_filter.to_csv("papers_review.csv", index=False)
 ```
 
 
@@ -376,11 +382,6 @@ scopus
 
 Assign a new variable for the found methods using the find_keywords function defined before. Then save the sliced data to an excel file for yolo and deep learning methods which leads to 39 entries.
 
-```{python}
-scopus1 = scopus.head()
-scopus1["full_dict"] = scopus1.to_dict(orient="records")
-scopus1["llm_summary"] = paper_review(scopus1["full_dict"])
-```
 
 ```{python}
 scopus["Found Methods"] = scopus["Abstract"].apply(lambda x: find_keywords(x, keywords))
@@ -399,4 +400,18 @@ scopus_method[
 # show(df_future[["Methods Used", "Found Methods", "Results", "Future Research"]])
 
 px.histogram(scopus, y="Found Methods")
+```
+
+```{python}
+scopus1 = scopus.head()
+# scopus1["full_dict"] = scopus1.to_dict(orient="records")
+scopus["llm_method"] = extract_info_vec(scopus["Abstract"])
+```
+
+```{python}
+# Apply the function to each article (assuming "Abstract" is the column name)
+scopus["Review"] = scopus["Abstract"].apply(lambda text: review_article(text) if pd.notna(text) else "No abstract provided")
+
+# Save the reviewed articles
+scopus.to_excel("reviewed_articles.xlsx", index=False)
 ```
